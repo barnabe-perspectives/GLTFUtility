@@ -69,11 +69,24 @@ namespace Siccity.GLTFUtility {
 			return gltfObject.LoadInternal(filepath, null, binChunkStart, importSettings, out animations);
 		}
 
-		private static GameObject ImportGLB(byte[] bytes, ImportSettings importSettings, out AnimationClip[] animations) {
+		private static GameObject ImportGLB(byte[] bytes, ImportSettings importSettings, out AnimationClip[] animations)
+		{
 			Stream stream = new MemoryStream(bytes);
 			long binChunkStart;
 			string json = GetGLBJson(stream, out binChunkStart);
-			GLTFObject gltfObject = JsonConvert.DeserializeObject<GLTFObject>(json);
+			// FIX JSON BAD CONVERSION
+			StringBuilder sb = new StringBuilder(json);
+			for (int i = sb.Length - 1; i > 0; --i)
+			{
+				if (sb[i] != '}')
+					sb.Remove(i, 1);
+				else
+					break;
+			}
+			sb.Append("   ");
+			var fixedStr = sb.ToString();
+
+			GLTFObject gltfObject = JsonConvert.DeserializeObject<GLTFObject>(fixedStr);
 			return gltfObject.LoadInternal(null, bytes, binChunkStart, importSettings, out animations);
 		}
 
